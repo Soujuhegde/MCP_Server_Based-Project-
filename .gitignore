@@ -1,0 +1,47 @@
+# Virtual Environment
+venv/
+.venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+.Python
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Environment variables
+.env
+.env.*
+
+# Vector DB / ChromaDB
+chroma_db/
+
+# Data files (PDFs, raw eBooks)
+data/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/

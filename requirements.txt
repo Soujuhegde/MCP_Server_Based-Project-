@@ -1,0 +1,13 @@
+streamlit
+chromadb
+sentence-transformers
+langchain
+langchain-community
+python-dotenv
+openai
+tiktoken
+pypdf
+fastapi
+uvicorn
+requests
+python-multipart
