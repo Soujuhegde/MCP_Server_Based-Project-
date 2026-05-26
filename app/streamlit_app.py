@@ -151,7 +151,7 @@ if prompt := st.chat_input("Ask a question about your documents..."):
                     "query": prompt,
                     "chat_history": st.session_state.messages[:-1]
                 }
-                r = requests.post(f"{BACKEND_URL}/query", json=payload, timeout=60)
+                r = requests.post(f"{BACKEND_URL}/query", json=payload, timeout=120)
                 
                 if r.status_code == 200:
                     result = r.json()

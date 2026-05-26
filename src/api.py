@@ -21,6 +21,18 @@ app = FastAPI(
     version="1.0.0"
 )
 
+@app.on_event("startup")
+def startup_event():
+    """Pre-loads the embedding model on server startup to prevent request timeouts."""
+    try:
+        print("🔥 Pre-loading SentenceTransformer embedding model at server startup...")
+        from src.vectordb import _get_model
+        _get_model()
+        print("✅ Embedding model preloaded successfully!")
+    except Exception as e:
+        print(f"❌ Error during server startup model preloading: {str(e)}")
+
+
 class QueryRequest(BaseModel):
     query: str
     chat_history: Optional[List[Dict[str, Any]]] = None
