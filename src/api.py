@@ -36,6 +36,7 @@ def startup_event():
 class QueryRequest(BaseModel):
     query: str
     chat_history: Optional[List[Dict[str, Any]]] = None
+    user_instructions: Optional[str] = None
 
 @app.get("/config")
 def get_config():
@@ -44,7 +45,8 @@ def get_config():
         return {
             "embedding_model": config.EMBEDDING_MODEL_NAME,
             "llm_engine": config.SARVAM_MODEL_NAME,
-            "database": "ChromaDB (Persistent)"
+            "database": "ChromaDB (Persistent)",
+            "orchestrator_enabled": config.ORCHESTRATOR_ENABLED
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -82,9 +84,13 @@ async def upload_file(file: UploadFile = File(...)):
 
 @app.post("/query")
 def query_rag(request: QueryRequest):
-    """Processes queries by passing them to the RAG pipeline with conversation history."""
+    """Processes queries by passing them to the RAG pipeline with conversation history and user instructions."""
     try:
-        result = generate_answer(request.query, chat_history=request.chat_history)
+        result = generate_answer(
+            query=request.query,
+            chat_history=request.chat_history,
+            user_instructions=request.user_instructions
+        )
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -108,6 +108,17 @@ with st.sidebar:
         
     st.markdown("---")
     
+    # Custom Instructions Panel
+    st.markdown("### 📝 Custom Instructions")
+    user_instructions = st.text_area(
+        "System instructions or guidelines:",
+        placeholder="e.g., Explain like I'm 5, Keep it concise...",
+        height=100,
+        label_visibility="collapsed"
+    )
+    
+    st.markdown("---")
+    
     if st.button("🗑️ Clear Conversation", use_container_width=True):
         st.session_state.messages = []
         st.session_state.ingested_files = set()
@@ -149,7 +160,8 @@ if prompt := st.chat_input("Ask a question about your documents..."):
                 # Pass past messages as context via API payload
                 payload = {
                     "query": prompt,
-                    "chat_history": st.session_state.messages[:-1]
+                    "chat_history": st.session_state.messages[:-1],
+                    "user_instructions": user_instructions if user_instructions.strip() else None
                 }
                 r = requests.post(f"{BACKEND_URL}/query", json=payload, timeout=120)
                 
