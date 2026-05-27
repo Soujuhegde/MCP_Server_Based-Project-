@@ -22,4 +22,4 @@ EBOOK_FILE_PATH = str(ROOT_DIR / "data" / "ebook.txt")
 SARVAM_API_KEY = os.getenv("SARVAM_API_KEY")
 SARVAM_BASE_URL = "https://api.sarvam.ai/v1"
 SARVAM_MODEL_NAME = "sarvam-m"
-SARVAM_TEMPERATURE = 0.0
+SARVAM_TEMPERATURE = 0.1

@@ -35,6 +35,6 @@ def search_docs(query, n_results=5):
 
     documents = results["documents"][0]
     metadatas = results["metadatas"][0] if results.get("metadatas") else [None] * len(documents)
-
+    print("metadata:",metadatas)
     # Return structured dicts containing both text and source metadata
     return [{"text": doc, "metadata": meta} for doc, meta in zip(documents, metadatas)]
