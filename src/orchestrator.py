@@ -1,10 +1,10 @@
 import json
 import logging
 from typing import Dict, List, Optional, Tuple
-from duckduckgo_search import DDGS
 from openai import OpenAI
 
 from . import config
+from .mcp_client import search_via_mcp
 from .prompts import (
     ORCHESTRATOR_PROMPT,
     WEB_CONTEXT_TEMPLATE,
@@ -56,8 +56,7 @@ def classify_query_intent(query: str) -> Dict[str, str]:
 
 def search_duckduckgo(query: str, max_results: int = None) -> str:
     """
-    Performs Yahoo/DuckDuckGo web search and formats results as a string.
-    No API key required — uses public search endpoints.
+    Performs web search exclusively via the DuckDuckGo MCP server.
     
     Args:
         query: Search query string
@@ -71,88 +70,14 @@ def search_duckduckgo(query: str, max_results: int = None) -> str:
     
     results = []
     
-    # Method 1: Try Yahoo Search first (extremely robust, rarely blocked, rich snippets)
+    # Exclusively use the DuckDuckGo MCP Server
     try:
-        import requests
-        from bs4 import BeautifulSoup
-        import urllib.parse
-        
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        }
-        url = "https://search.yahoo.com/search"
-        params = {"q": query}
-        
-        r = requests.get(url, params=params, headers=headers, timeout=10)
-        if r.status_code == 200:
-            soup = BeautifulSoup(r.text, 'html.parser')
-            for div in soup.find_all('div', class_='algo')[:max_results]:
-                a_tag = div.find('a')
-                if not a_tag:
-                    continue
-                
-                # Extract clean title from h3 or fall back to a text
-                title_tag = div.find('h3')
-                title = title_tag.get_text().strip() if title_tag else a_tag.get_text().strip()
-                
-                # Extract clean redirect-free href
-                href = a_tag.get('href', '')
-                if "/RU=" in href:
-                    try:
-                        real_url = href.split("/RU=")[1].split("/")[0]
-                        href = urllib.parse.unquote(real_url)
-                    except Exception:
-                        pass
-                
-                # Extract snippet body
-                snippet_tag = div.find('span', class_='fc-falcon') or div.find('div', class_='compText') or div.find('p')
-                body = snippet_tag.get_text().strip() if snippet_tag else "No snippet available."
-                
-                if title and href:
-                    results.append({"title": title, "body": body, "href": href})
+        mcp_results = search_via_mcp(query, max_results=max_results)
+        if mcp_results:
+            logger.info("Successfully fetched search results via DuckDuckGo MCP server.")
+            results = mcp_results
     except Exception as e:
-        logger.warning(f"Yahoo Search parsing error: {str(e)}")
-        
-    # Method 2: Fallback to DuckDuckGo HTML scraping
-    if not results:
-        try:
-            import requests
-            from bs4 import BeautifulSoup
-            
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-            }
-            url = "https://html.duckduckgo.com/html/"
-            params = {"q": query}
-            
-            r = requests.post(url, data=params, headers=headers, timeout=10)
-            if r.status_code == 200:
-                soup = BeautifulSoup(r.text, 'html.parser')
-                for div in soup.find_all('div', class_='result')[:max_results]:
-                    title_tag = div.find('a', class_='result__url')
-                    snippet_tag = div.find('a', class_='result__snippet')
-                    
-                    if title_tag:
-                        title = title_tag.get_text().strip()
-                        href = title_tag['href']
-                        if href.startswith("//duckduckgo.com/y.js"):
-                            continue
-                    else:
-                        title = "No Title"
-                        href = ""
-                        
-                    body = snippet_tag.get_text().strip() if snippet_tag else "No snippet available."
-                    results.append({"title": title, "body": body, "href": href})
-        except Exception as e:
-            logger.warning(f"DuckDuckGo HTML fallback error: {str(e)}")
-            
-    # Method 3: Fallback to duckduckgo_search library
-    if not results:
-        try:
-            with DDGS() as ddgs:
-                results = list(ddgs.text(query, max_results=max_results))
-        except Exception as e:
-            logger.error(f"DuckDuckGo search library error: {str(e)}")
+        logger.error(f"Failed to fetch results via DuckDuckGo MCP server: {str(e)}", exc_info=True)
             
     if not results:
         return "No web results found for this query."

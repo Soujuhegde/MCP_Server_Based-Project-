@@ -145,7 +145,7 @@ Examples:
         
         # 1. Start uvicorn backend API server in a background subprocess
         api_cmd = [sys.executable, "-m", "uvicorn", "src.api:app", "--host", "127.0.0.1", "--port", "8000"]
-        print("🚀 Starting FastAPI backend on http://localhost:8000...")
+        print("🚀 Starting FastAPI backend on http://127.0.0.1:8000...")
         
         api_process = subprocess.Popen(
             api_cmd, 
@@ -159,7 +159,7 @@ Examples:
         backend_ready = False
         while retries > 0:
             try:
-                res = requests.get("http://localhost:8000/config", timeout=1)
+                res = requests.get("http://127.0.0.1:8000/config", timeout=1)
                 if res.status_code == 200:
                     backend_ready = True
                     break

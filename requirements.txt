@@ -11,5 +11,5 @@ fastapi
 uvicorn
 requests
 python-multipart
-duckduckgo-search>=6.1.0
-beautifulsoup4
+mcp
+duckduckgo-mcp-server
